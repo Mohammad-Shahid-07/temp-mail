@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Archive, Trash2, Lock, Download, ExternalLink, Link as LinkIcon, Code, FileText, Paperclip, File, Globe, Copy } from "lucide-react"
+import { Archive, Trash2, Lock, Download, ExternalLink, Link as LinkIcon, Code, FileText, Paperclip, File, Globe, Copy, Shield, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
@@ -23,24 +23,128 @@ interface MailDisplayProps {
   onOpenFakeID?: () => void
   onOpenPasswordGen?: () => void
   currentProvider: MailProvider
+  onBack?: () => void
 }
 
-export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode, token, onOpenFakeID, onOpenPasswordGen }: MailDisplayProps) {
+type Attachment = {
+  id?: string | number
+  filename: string
+  downloadUrl: string
+  size?: number
+}
+
+function isAttachment(att: unknown): att is Attachment {
+  if (!att || typeof att !== "object") return false
+  const obj = att as Record<string, unknown>
+  return typeof obj.filename === "string" && typeof obj.downloadUrl === "string"
+}
+
+export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode, token, onOpenFakeID, onOpenPasswordGen, onBack }: MailDisplayProps) {
   const [isSourceOpen, setIsSourceOpen] = React.useState(false)
   const [sourceCode, setSourceCode] = React.useState("")
   const [viewMode, setViewMode] = React.useState<'text' | 'html'>('text')
+  const [blockImages, setBlockImages] = React.useState(true)
+
+  const attachments = React.useMemo(() => {
+    return (selectedMessage?.attachments ?? []).filter(isAttachment)
+  }, [selectedMessage?.attachments])
 
   // Reset view mode when message changes
   React.useEffect(() => {
     setViewMode('text')
   }, [selectedMessage?.id])
 
-  const links = React.useMemo(() => {
-    if (!selectedMessage?.body) return [];
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const found = selectedMessage.body.match(urlRegex) || [];
-    return [...new Set(found)]; // Deduplicate
-  }, [selectedMessage]);
+  const generateLinkLabel = React.useCallback((link: string, ctaLabel?: string): string => {
+    if (ctaLabel) return ctaLabel;
+    if (/verify/i.test(link)) return "Verify Account";
+    if (/reset/i.test(link)) return "Reset Password";
+    if (/confirm|activate/i.test(link)) return "Confirm";
+    if (/password/i.test(link)) return "Password Link";
+    if (/sign\s*in|login/i.test(link)) return "Sign In";
+    if (/click\s*here/i.test(link)) return "Click Here";
+    return "Open Link";
+  }, []);
+
+  const { allLinks, ctaLinks, ctaLinkLabels } = React.useMemo(() => {
+    const foundLinks: string[] = [];
+    const foundCtaLinks: { url: string; label: string }[] = [];
+
+    // Helper to decode HTML entities
+    const decodeHtmlEntities = (text: string): string => {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = text;
+      return textarea.value;
+    };
+
+    // Extract HTTP(S) URLs from body text
+    if (selectedMessage?.body) {
+      const urlRegex = /https?:\/\/[^\s<>"'\)\]]+/gi;
+      const bodyUrls = selectedMessage.body.match(urlRegex) || [];
+      foundLinks.push(...bodyUrls);
+    }
+
+    // Extract links from HTML (look for href attributes)
+    if (selectedMessage?.html && selectedMessage.html.length > 0) {
+      const htmlContent = selectedMessage.html[0] || "";
+      // Extract href from HTML
+      const hrefRegex = /href=["']([^"']+)["']/g;
+      let match;
+      while ((match = hrefRegex.exec(htmlContent)) !== null) {
+        let url = match[1];
+        // Decode HTML entities
+        url = decodeHtmlEntities(url);
+        if (url && (url.startsWith("http") || url.startsWith("/"))) {
+          foundLinks.push(url);
+        }
+      }
+
+      // Extract visible text + href pairs from anchor tags
+      const anchorRegex = /<a[^>]*href=["']([^"']+)["'][^>]*>([^<]+)<\/a>/gi;
+      while ((match = anchorRegex.exec(htmlContent)) !== null) {
+        let url = match[1];
+        const text = match[2]?.trim() || url;
+        // Decode HTML entities in URL
+        url = decodeHtmlEntities(url);
+        // Look for action keywords in link text or URL
+        const keywords = /(sign\s*in|verify|reset|confirm|activate|password|login|click\s*here|authenticate|authorize)/i;
+        if (keywords.test(text) || keywords.test(url)) {
+          foundCtaLinks.push({ url, label: text });
+        }
+      }
+    }
+
+    // Also check for CTA keywords in the body text if no HTML links found
+    if (foundCtaLinks.length === 0 && selectedMessage?.body) {
+      const urlRegex = /https?:\/\/[^\s<>"'\)\]]+/gi;
+      const bodyUrls = selectedMessage.body.match(urlRegex) || [];
+      const keywords = /(verify|reset|confirm|activate|password|sign\s*in|login|click)/i;
+      foundCtaLinks.push(
+        ...bodyUrls
+          .filter(link => keywords.test(link))
+          .map(url => ({ url, label: generateLinkLabel(url) }))
+      );
+    }
+
+    // Deduplicate
+    const uniqueLinks = [...new Set(foundLinks)];
+    const uniqueCtaLinks = foundCtaLinks.slice(0, 3); // Limit to 3 CTA links
+
+    const linkLabels = new Map(uniqueCtaLinks.map(({ url, label }) => [url, label]));
+
+    return {
+      allLinks: uniqueLinks,
+      ctaLinks: uniqueCtaLinks.map(l => l.url),
+      ctaLinkLabels: linkLabels
+    };
+  }, [selectedMessage, generateLinkLabel]);
+
+  const keywordsLinkLabel = React.useCallback((link: string): string => {
+    // Check if we already have a label from HTML anchor text
+    if (ctaLinkLabels.has(link)) {
+      return ctaLinkLabels.get(link)!;
+    }
+    return generateLinkLabel(link);
+  }, [ctaLinkLabels, generateLinkLabel]);
 
   const handleDownload = () => {
     if (!selectedMessage) return;
@@ -61,11 +165,8 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
       url = `https://api.mail.tm${url}`;
     }
     
-    const headers: any = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
+    const headers: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined
+
     fetch(url, { headers })
       .then(res => res.blob())
       .then(blob => {
@@ -78,17 +179,13 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
       .catch(e => console.error("Download failed", e));
   };
 
-  const handleDownloadAttachment = (att: any) => {
+  const handleDownloadAttachment = (att: Attachment) => {
     let url = att.downloadUrl;
     // If relative and not my proxy, assume Mail.tm
     if (!url.startsWith('http') && !url.startsWith('/api')) {
       url = `https://api.mail.tm${url}`;
     }
-
-    const headers: any = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    const headers: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined
 
     fetch(url, { headers })
       .then(res => res.blob())
@@ -109,7 +206,7 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
     try {
       const data = await mailApi.getMessageSource(token, selectedMessage.id);
       setSourceCode(data.data || "No source available");
-    } catch (e) {
+    } catch {
       setSourceCode("Failed to load source.");
     }
   };
@@ -126,8 +223,19 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
           >
             {/* Message Toolbar */}
             {!isScreenshotMode && (
-              <div className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-white/2">
-                <div className="flex gap-2">
+              <div className="h-14 sm:h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-8 bg-white/2 gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto min-w-0 pr-2">
+                  {onBack && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={onBack}
+                      className="h-9 w-9 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg md:hidden shrink-0"
+                      aria-label="Back to inbox"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                  )}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-9 w-9 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg">
@@ -193,6 +301,21 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
                       <TooltipContent>Toggle HTML View</TooltipContent>
                     </Tooltip>
                   )}
+                  {selectedMessage.html && selectedMessage.html.length > 0 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn("h-9 w-9 rounded-lg transition-colors", blockImages ? "text-emerald-400 bg-emerald-500/10" : "text-zinc-400 hover:text-white hover:bg-white/10")}
+                          onClick={() => setBlockImages((v) => !v)}
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{blockImages ? "Remote images blocked" : "Allow remote images"}</TooltipContent>
+                    </Tooltip>
+                  )}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
@@ -207,7 +330,7 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
                     <TooltipContent>View Source</TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
+                <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-500 font-mono shrink-0">
                   <Lock className="h-3 w-3" />
                   TLS 1.3 ENCRYPTED
                 </div>
@@ -216,11 +339,56 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
 
             {/* Message Content */}
             <ScrollArea className="flex-1 h-0">
-              <div className="p-6 md:p-10 max-w-4xl mx-auto">
+              <div className="p-4 sm:p-6 md:p-10 max-w-4xl mx-auto">
+                {ctaLinks.length > 0 && (
+                  <div className="mb-6 space-y-2">
+                    {ctaLinks.map((link, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all"
+                      >
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 overflow-hidden flex-1 min-w-0"
+                        >
+                          <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-200 shrink-0">
+                            <ExternalLink className="h-4 w-4" />
+                          </div>
+                          <div className="flex flex-col overflow-hidden flex-1">
+                            <span className="text-sm font-semibold text-white truncate">{keywordsLinkLabel(link)}</span>
+                            <span className="text-xs text-emerald-200/80 truncate font-mono">{link}</span>
+                          </div>
+                        </a>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            className="h-8 px-3 text-emerald-400 hover:bg-emerald-500/20"
+                            onClick={() => navigator.clipboard.writeText(link)}
+                          >
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="secondary" 
+                            className="bg-white text-emerald-700 hover:bg-emerald-100"
+                            onClick={() => window.open(link, '_blank')}
+                          >
+                            Open
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="mb-10 pb-8 border-b border-white/5">
-                  <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 tracking-tight text-glow break-words">{selectedMessage.subject}</h1>
-                  <div className="flex items-start gap-5">
-                    <div className="h-12 w-12 rounded-2xl bg-linear-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-500/20 shrink-0">
+                  <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 tracking-tight text-glow wrap-break-word">{selectedMessage.subject}</h1>
+                  <div className="flex items-start gap-3 sm:gap-5">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-linear-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg shadow-emerald-500/20 shrink-0">
                       {selectedMessage.sender[0]}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -255,28 +423,54 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
                   </div>
                 )}
 
-                {links.length > 0 && (
-                  <div className="mb-8 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                    <div className="flex items-center gap-2 text-emerald-400 mb-3 font-mono text-xs uppercase tracking-wider">
+                {allLinks.filter(link => !ctaLinks.includes(link)).length > 0 && (
+                  <div className="mb-8 p-4 rounded-xl bg-zinc-500/5 border border-zinc-500/20">
+                    <div className="flex items-center gap-2 text-zinc-400 mb-3 font-mono text-xs uppercase tracking-wider">
                       <LinkIcon className="h-3 w-3" />
-                      Detected Links
+                      Other Links
                     </div>
                     <div className="space-y-2">
-                      {links.map((link, i) => (
-                        <a 
-                          key={i} 
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 transition-all group min-w-0"
-                        >
-                          <div className="h-8 w-8 rounded-md bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
-                            <ExternalLink className="h-4 w-4" />
+                      {allLinks.filter(link => !ctaLinks.includes(link)).map((link, i) => {
+                        const label = generateLinkLabel(link);
+                        return (
+                          <div 
+                            key={i} 
+                            className="flex items-center gap-3 p-3 rounded-lg bg-black/40 hover:bg-zinc-500/10 border border-white/5 hover:border-zinc-500/30 transition-all group min-w-0"
+                          >
+                            <div className="h-8 w-8 rounded-md bg-zinc-500/20 flex items-center justify-center text-zinc-400 group-hover:scale-110 transition-transform shrink-0">
+                              <Globe className="h-4 w-4" />
+                            </div>
+                            <a 
+                              href={link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex-1 min-w-0 flex flex-col"
+                            >
+                              <span className="text-sm text-zinc-300 hover:text-white truncate">{label}</span>
+                              <span className="text-xs text-zinc-500 font-mono truncate">{link}</span>
+                            </a>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-7 w-7 p-0 text-zinc-400 hover:text-white hover:bg-white/10"
+                                onClick={() => navigator.clipboard.writeText(link)}
+                                title="Copy link"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-7 px-2 text-xs text-zinc-400 hover:bg-zinc-500/20"
+                                onClick={() => window.open(link, '_blank')}
+                              >
+                                Open
+                              </Button>
+                            </div>
                           </div>
-                          <span className="flex-1 text-sm text-zinc-300 truncate font-mono">{link}</span>
-                          <Button size="sm" variant="ghost" className="text-xs h-7 shrink-0">Open</Button>
-                        </a>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -284,28 +478,28 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
                 {viewMode === 'html' && selectedMessage.html ? (
                   <div className="bg-white rounded-lg overflow-hidden border border-white/10">
                     <iframe 
-                      srcDoc={selectedMessage.html[0]} 
-                      className="w-full h-[600px] bg-white" 
-                      sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+                      srcDoc={blockImages ? selectedMessage.html[0]?.replace(/<img[^>]*>/gi, '') : selectedMessage.html[0]} 
+                      className="w-full h-150 bg-white" 
+                      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin"
                     />
                   </div>
                 ) : (
-                  <div className="prose prose-invert prose-lg max-w-none text-zinc-300 leading-relaxed whitespace-pre-wrap font-light break-words">
+                  <div className="prose prose-invert prose-lg max-w-none text-zinc-300 leading-relaxed whitespace-pre-wrap font-light wrap-break-word">
                     {selectedMessage.body}
                   </div>
                 )}
 
                 {/* Attachments */}
-                {selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
+                {attachments.length > 0 && (
                   <div className="mt-8 pt-8 border-t border-white/5">
                     <div className="flex items-center gap-2 text-zinc-400 mb-4 font-mono text-xs uppercase tracking-wider">
                       <Paperclip className="h-3 w-3" />
-                      Attachments ({selectedMessage.attachments.length})
+                      Attachments ({attachments.length})
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      {selectedMessage.attachments.map((att: any) => (
+                      {attachments.map((att) => (
                         <button 
-                          key={att.id}
+                          key={String(att.id ?? att.filename)}
                           onClick={() => handleDownloadAttachment(att)}
                           className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all group text-left w-full"
                         >
@@ -314,7 +508,9 @@ export function MailDisplay({ selectedMessage, email, onDelete, isScreenshotMode
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm text-zinc-300 truncate font-medium">{att.filename}</div>
-                            <div className="text-xs text-zinc-500 font-mono">{(att.size / 1024).toFixed(1)} KB</div>
+                            {typeof att.size === "number" && (
+                              <div className="text-xs text-zinc-500 font-mono">{(att.size / 1024).toFixed(1)} KB</div>
+                            )}
                           </div>
                           <Download className="h-4 w-4 text-zinc-500 group-hover:text-white" />
                         </button>

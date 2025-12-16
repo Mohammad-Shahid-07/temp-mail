@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { cn } from "@/lib/utils"
 
 interface PasswordGeneratorDialogProps {
   open: boolean
@@ -64,11 +63,11 @@ export function PasswordGeneratorDialog({ open, onOpenChange }: PasswordGenerato
           {/* Display */}
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-linear-to-r from-emerald-500 to-green-500 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-500" />
-            <div className="relative bg-black border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4">
-              <div className="font-mono text-lg text-emerald-400 break-all">
+            <div className="relative bg-black border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="font-mono text-base sm:text-lg text-emerald-400 break-all min-w-0">
                 {password}
               </div>
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-2 shrink-0 self-end sm:self-auto">
                 <Button
                   size="icon"
                   variant="ghost"

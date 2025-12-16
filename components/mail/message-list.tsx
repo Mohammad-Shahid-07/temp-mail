@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { RefreshCw, Flame, Eye, EyeOff, Copy, Check, Inbox, QrCode, UserPlus } from "lucide-react"
+import { RefreshCw, Flame, Eye, EyeOff, Copy, Check, Inbox, QrCode, UserPlus, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion, AnimatePresence } from "framer-motion"
@@ -22,6 +22,8 @@ interface MailListProps {
   handleBurn: () => void
   onOpenCustom?: () => void
   onOpenQR?: () => void
+  onBackupInbox?: () => void
+  currentAccount?: { id: string; provider: string; address: string; token: string | null; fakeName?: string }
 }
 
 export function MailList({
@@ -37,92 +39,154 @@ export function MailList({
   handleRefresh,
   handleBurn,
   onOpenCustom,
-  onOpenQR
+  onOpenQR,
+  onBackupInbox,
+  currentAccount
 }: MailListProps) {
+  const [showFakeName, setShowFakeName] = React.useState(true)
+  const [isCopiedName, setIsCopiedName] = React.useState(false)
+  
+  const handleCopyName = () => {
+    if (currentAccount?.fakeName) {
+      navigator.clipboard.writeText(currentAccount.fakeName)
+      setIsCopiedName(true)
+      setTimeout(() => setIsCopiedName(false), 2000)
+    }
+  }
   return (
     <div className="h-full flex flex-col min-h-0">
       {/* Identity Control */}
-      <div className="p-6 border-b border-white/5 space-y-4 bg-linear-to-b from-white/2 to-transparent shrink-0">
+      <div className="p-2 sm:p-3 border-b border-white/5 space-y-2 bg-linear-to-b from-white/2 to-transparent shrink-0">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Active Identity</span>
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-500">SECURE</span>
-          </div>
+          {onBackupInbox && (
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="h-6 text-[10px] px-2 rounded-lg text-emerald-400 hover:text-white hover:bg-emerald-500/10"
+              onClick={onBackupInbox}
+            >
+              Backup
+            </Button>
+          )}
         </div>
         
+        {/* Identity Name */}
+        {currentAccount?.fakeName && (
+          <div className="flex items-center justify-between gap-2 bg-white/2 rounded-lg border border-white/5 p-2">
+            <div className="flex-1 min-w-0">
+              {showFakeName ? (
+                <p className="text-xs font-semibold text-white truncate">
+                  {currentAccount.fakeName}
+                </p>
+              ) : (
+                <p className="text-xs font-semibold text-zinc-500">••••••••••••••</p>
+              )}
+            </div>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 hover:bg-white/10 hover:text-white rounded-lg"
+                onClick={() => setShowFakeName(!showFakeName)}
+                title={showFakeName ? "Hide name" : "Show name"}
+              >
+                {showFakeName ? (
+                  <Eye className="h-3.5 w-3.5 text-zinc-400" />
+                ) : (
+                  <EyeOff className="h-3.5 w-3.5 text-zinc-400" />
+                )}
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 hover:bg-emerald-500/20 hover:border hover:border-emerald-500/40 rounded-lg transition-all duration-200"
+                onClick={handleCopyName}
+                title="Copy name"
+              >
+                {isCopiedName ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5 text-zinc-400" />
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <div className="relative group">
-          <div className="absolute -inset-0.5 bg-linear-to-r from-emerald-500 to-green-500 rounded-xl blur opacity-20 group-hover:opacity-50 transition duration-500" />
-          <div className="relative bg-black/80 border border-white/10 rounded-xl p-1 flex items-center">
-            <div className={cn("flex-1 px-3 font-mono text-sm text-zinc-300 truncate transition-all duration-300", isBlur && "blur-md select-none opacity-50")}>
+          <div className="absolute -inset-0.5 bg-linear-to-r from-emerald-500 to-green-500 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500" />
+          <div className="relative bg-black/80 border border-white/10 rounded-lg p-1 flex items-center">
+            <div className={cn("flex-1 px-2 font-mono text-xs text-zinc-300 truncate transition-all duration-300", isBlur && "blur-md select-none opacity-50")}>
               {email}
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-0.5">
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="h-8 w-8 hover:bg-white/10 hover:text-white rounded-lg"
+                className="h-7 w-7 hover:bg-white/10 hover:text-white rounded-lg"
                 onClick={() => setIsBlur(!isBlur)}
               >
-                {isBlur ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {isBlur ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               </Button>
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="h-8 w-8 hover:bg-white/10 hover:text-white rounded-lg"
+                className="h-7 w-7 hover:bg-white/10 hover:text-white rounded-lg"
                 onClick={handleCopy}
               >
-                {isCopied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
               </Button>
             </div>
           </div>
         </div>
 
         {/* Action Grid */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex items-center gap-1">
           <Button 
             variant="outline" 
-            className="col-span-2 bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-zinc-300 h-9 text-xs uppercase tracking-wider font-medium transition-all"
+            className="flex-1 bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-zinc-300 h-8 text-xs px-2"
             onClick={handleRefresh}
             disabled={isLoading}
           >
-            <RefreshCw className={cn("h-3 w-3 mr-2", isLoading && "animate-spin")} />
-            Refresh
+            <RefreshCw className={cn("h-3 w-3 sm:mr-2", isLoading && "animate-spin")} />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           
           <Button 
             variant="outline" 
             size="icon"
-            className="bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-zinc-400 h-9 w-full"
+            className="bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-zinc-400 h-8 w-8"
             onClick={onOpenQR}
             title="Mobile QR"
           >
-            <QrCode className="h-4 w-4" />
+            <QrCode className="h-3.5 w-3.5" />
           </Button>
 
           <Button 
             variant="outline" 
             size="icon"
-            className="bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-zinc-400 h-9 w-full"
+            className="bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-zinc-400 h-8 w-8"
             onClick={onOpenCustom}
             title="Custom Address"
           >
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-3.5 w-3.5" />
           </Button>
-
+          
           <Button 
             variant="outline" 
-            className="col-span-4 bg-red-500/5 border-red-500/10 hover:bg-red-500/10 hover:border-red-500/30 text-red-400 h-9 text-xs uppercase tracking-wider font-medium transition-all group mt-1"
+            size="icon"
+            className="bg-red-500/5 border-red-500/10 hover:bg-red-500/10 hover:border-red-500/30 text-red-400 h-8 w-8"
             onClick={handleBurn}
+            title="Burn Identity"
           >
-            <Flame className="h-3 w-3 mr-2 group-hover:text-red-300" />
-            Burn Identity
+            <Flame className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
 
       {/* List */}
-      <ScrollArea className="flex-1 h-0">
+      <ScrollArea className="flex-1 h-0 block!">
         <div className="flex flex-col p-2 gap-1">
           <AnimatePresence initial={false} mode="popLayout">
             {messages.length === 0 ? (
@@ -165,6 +229,49 @@ export function MailList({
                   <span className="text-xs text-zinc-600 truncate w-full relative z-10 group-hover:text-zinc-500 block">
                     {msg.preview}
                   </span>
+                  {msg.actionLink && (
+                    <div 
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-2 flex items-center justify-between gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-md w-full max-w-full relative z-10 overflow-hidden hover:bg-blue-500/20 transition-colors"
+                    >
+                      <a 
+                        href={msg.actionLink.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 flex-1 min-w-0"
+                      >
+                        <ExternalLink className="h-3 w-3 text-blue-400 shrink-0" />
+                        <span className="text-xs font-medium text-blue-400 truncate">{msg.actionLink.label}</span>
+                      </a>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-5 w-5 text-blue-400 hover:text-white hover:bg-blue-500/20 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(msg.actionLink!.url);
+                          }}
+                          title="Copy link"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-5 w-5 text-blue-400 hover:text-white hover:bg-blue-500/20 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            window.open(msg.actionLink!.url, '_blank');
+                          }}
+                          title="Open link"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   {msg.otp && (
                     <div className="mt-2 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1.5 rounded-md w-fit max-w-full group/otp relative z-10 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                       <span className="text-xs font-mono text-emerald-400 tracking-widest truncate min-w-0">OTP: {msg.otp}</span>

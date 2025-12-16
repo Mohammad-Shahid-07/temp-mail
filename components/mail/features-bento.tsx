@@ -2,9 +2,7 @@
 
 import * as React from "react"
 import { motion } from "framer-motion"
-import { Shield, KeyRound, User, Zap, Lock, Globe, ScanLine, Ghost, ArrowRight, Sparkles } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Shield, KeyRound, User, Zap, Lock, Globe, ScanLine, Ghost, Server, Fingerprint, Bell, QrCode, Layers } from "lucide-react"
 
 interface FeaturesBentoProps {
   onOpenFakeID?: () => void
@@ -40,162 +38,200 @@ const item: Variants = {
 
 export function FeaturesBento({ onOpenFakeID, onOpenPasswordGen }: FeaturesBentoProps) {
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto bg-black/20">
-      <motion.div 
+    <div className="relative h-full w-full overflow-y-auto bg-[#05070c] px-3 py-3">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_15%,rgba(59,130,246,0.08),transparent_35%)]" />
+
+      <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl w-full mx-auto"
+        className="relative z-10 mx-auto grid w-full max-w-5xl grid-cols-1 gap-2 md:grid-cols-12 md:auto-rows-[minmax(100px,auto)]"
       >
-        {/* Hero Card */}
-        <motion.div 
-          variants={item} 
-          className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-zinc-900/80 to-black border border-white/5 p-8 md:p-10 flex flex-col justify-between group hover:border-emerald-500/30 transition-all duration-500 shadow-2xl shadow-black/50"
+        <motion.div
+          variants={item}
+          className="relative overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br from-[#0c1724] via-[#0a101a] to-[#080b14] p-4 md:col-span-7 shadow-[0_12px_40px_-30px_rgba(16,185,129,0.55)]"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.05),transparent_70%)]" />
-          <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity duration-500 transform group-hover:scale-110 group-hover:rotate-12 transition-transform">
-            <Ghost className="w-48 h-48 text-emerald-500" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(34,197,94,0.2),transparent_40%)]" />
+          <div className="absolute right-4 top-4 text-emerald-200/20">
+            <Ghost className="h-10 w-10" />
           </div>
-          
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono uppercase tracking-widest mb-6 backdrop-blur-md">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+
+          <div className="relative flex flex-col gap-3">
+            <div className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-emerald-100">
+              GhostMail Console
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300" />
               </span>
-              System Online
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
-              GhostMail <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">Prime</span>
-            </h2>
-            <p className="text-zinc-400 text-lg max-w-md leading-relaxed">
-              Next-generation temporary email infrastructure. Military-grade encryption, zero-knowledge architecture, and instant disposability.
-            </p>
-          </div>
 
-          <div className="relative z-10 grid grid-cols-2 gap-6 mt-12">
-            <div className="flex items-center gap-3 text-zinc-300 group/item">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover/item:bg-emerald-500/20 transition-colors">
-                <Shield className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-medium">Tracker Blocking</span>
+            <div className="space-y-1">
+              <h2 className="text-lg font-bold leading-tight text-white">
+                Keep burner identities sharp, fast, and clean.
+              </h2>
+              <p className="max-w-2xl text-xs text-zinc-400">
+                Smart CTAs for verify/reset links, live polling, and a provider mesh you can swap without losing flow.
+              </p>
             </div>
-            <div className="flex items-center gap-3 text-zinc-300 group/item">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover/item:bg-emerald-500/20 transition-colors">
-                <Zap className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-medium">Instant Delivery</span>
-            </div>
-            <div className="flex items-center gap-3 text-zinc-300 group/item">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover/item:bg-emerald-500/20 transition-colors">
-                <Lock className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-medium">TLS 1.3 Encrypted</span>
-            </div>
-            <div className="flex items-center gap-3 text-zinc-300 group/item">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover/item:bg-emerald-500/20 transition-colors">
-                <Globe className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-medium">Multi-Region</span>
+
+            <div className="grid grid-cols-2 gap-1.5 pt-1">
+              {[{
+                icon: <Shield className="h-3.5 w-3.5" />, label: "Tracker shields", meta: "Pixels scrubbed"
+              }, {
+                icon: <Zap className="h-3.5 w-3.5" />, label: "5s polling", meta: "Real-time"
+              }, {
+                icon: <Lock className="h-3.5 w-3.5" />, label: "TLS enforced", meta: "UI + provider"
+              }, {
+                icon: <Globe className="h-3.5 w-3.5" />, label: "Provider mesh", meta: "Multi-source"
+              }].map((stat, i) => (
+                <div key={i} className="group flex items-center gap-2 rounded-lg border border-white/5 bg-white/5 px-2 py-1.5 transition duration-300 hover:border-emerald-400/40 hover:bg-emerald-500/5">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-200">
+                    {stat.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold text-white">{stat.label}</div>
+                    <div className="text-[10px] text-zinc-500 truncate">{stat.meta}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </motion.div>
 
-        {/* Password Generator */}
-        <motion.div 
-          variants={item} 
-          className="col-span-1 md:col-span-1 lg:col-span-1 row-span-2 rounded-[2rem] bg-zinc-900/50 border border-white/5 p-8 flex flex-col justify-between hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-300 group cursor-pointer relative overflow-hidden"
-          onClick={onOpenPasswordGen}
+        <motion.div
+          variants={item}
+          className="relative flex h-full flex-col gap-2 overflow-hidden rounded-xl border border-white/8 bg-gradient-to-br from-[#10162a] via-[#0d1220] to-[#0b0f19] p-4 md:col-span-5 shadow-[0_8px_24px_-20px_rgba(99,102,241,0.5)]"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-900/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          
-          <div className="relative z-10">
-            <div className="h-14 w-14 rounded-2xl bg-zinc-800/50 border border-white/5 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:text-emerald-400 group-hover:border-emerald-500/20 transition-all duration-300 mb-6 shadow-lg">
-              <KeyRound className="w-7 h-7" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Password Gen</h3>
-            <p className="text-sm text-zinc-500 leading-relaxed">Create cryptographically secure passwords instantly with custom complexity rules.</p>
-          </div>
-          
-          <div className="relative z-10 mt-6">
-            <Button variant="outline" className="w-full bg-white/5 border-white/10 hover:bg-emerald-500 hover:text-black hover:border-emerald-500 transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-              Generate
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Fake Identity */}
-        <motion.div 
-          variants={item} 
-          className="col-span-1 md:col-span-1 lg:col-span-1 row-span-1 rounded-[2rem] bg-zinc-900/50 border border-white/5 p-6 flex flex-col justify-between hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-300 group cursor-pointer relative overflow-hidden"
-          onClick={onOpenFakeID}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <ArrowRight className="w-5 h-5 text-emerald-500 -rotate-45" />
-          </div>
-          
-          <div className="flex justify-between items-start mb-4">
-            <div className="h-12 w-12 rounded-2xl bg-zinc-800/50 border border-white/5 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:text-emerald-400 group-hover:border-emerald-500/20 transition-all duration-300">
-              <User className="w-6 h-6" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-white mb-1">Fake ID</h3>
-            <p className="text-xs text-zinc-500">Generate complete personas.</p>
-          </div>
-        </motion.div>
-
-        {/* OTP Detector */}
-        <motion.div 
-          variants={item} 
-          className="col-span-1 md:col-span-1 lg:col-span-1 row-span-1 rounded-[2rem] bg-zinc-900/50 border border-white/5 p-6 flex flex-col justify-between hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-300 group relative overflow-hidden"
-        >
-          <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <ScanLine className="w-24 h-24" />
-          </div>
-          
-          <div className="flex justify-between items-start mb-4">
-            <div className="h-12 w-12 rounded-2xl bg-zinc-800/50 border border-white/5 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:text-emerald-400 group-hover:border-emerald-500/20 transition-all duration-300">
-              <ScanLine className="w-6 h-6" />
-            </div>
-            <div className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
-              AI Powered
-            </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-white mb-1">OTP Detector</h3>
-            <p className="text-xs text-zinc-500">Auto-extracts verification codes.</p>
-          </div>
-        </motion.div>
-
-        {/* Multi-Provider Info */}
-        <motion.div 
-          variants={item} 
-          className="col-span-1 md:col-span-2 lg:col-span-2 rounded-[2rem] bg-zinc-900/50 border border-white/5 p-8 flex items-center justify-between hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-300 group relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          <div className="flex items-center gap-6 relative z-10">
-            <div className="h-16 w-16 rounded-2xl bg-zinc-800/50 border border-white/5 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:text-emerald-400 group-hover:border-emerald-500/20 transition-all duration-300 shadow-lg">
-              <Globe className="w-8 h-8" />
-            </div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(99,102,241,0.12),transparent_40%)]" />
+          <div className="relative flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-bold text-white">Multi-Provider Engine</h3>
-                <Sparkles className="w-4 h-4 text-emerald-500" />
-              </div>
-              <p className="text-sm text-zinc-500 max-w-xs">Seamlessly switch between Mail.tm, 1secmail, and other providers for maximum flexibility.</p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-indigo-200/70">Identity Lab</p>
+              <h3 className="mt-0.5 text-base font-semibold text-white">Spin fresh personas</h3>
             </div>
+            <Layers className="h-8 w-8 text-indigo-200/50" />
           </div>
-          
-          <div className="flex -space-x-4 relative z-10">
-            <div className="h-12 w-12 rounded-full bg-zinc-900 border-4 border-black flex items-center justify-center text-xs font-bold text-zinc-400 shadow-xl transform group-hover:translate-x-2 transition-transform duration-300">M</div>
-            <div className="h-12 w-12 rounded-full bg-zinc-800 border-4 border-black flex items-center justify-center text-xs font-bold text-zinc-300 shadow-xl transform group-hover:translate-x-0 transition-transform duration-300 z-10">1</div>
-            <div className="h-12 w-12 rounded-full bg-emerald-900 border-4 border-black flex items-center justify-center text-xs font-bold text-emerald-400 shadow-xl transform group-hover:-translate-x-2 transition-transform duration-300 z-20">+</div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button onClick={onOpenFakeID} className="group flex flex-col gap-1.5 rounded-xl border border-white/5 bg-white/5 p-3 text-left transition hover:border-emerald-400/40 hover:bg-emerald-500/5 hover:scale-[1.02]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/12 text-emerald-200">
+                <User className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-white">Fake identity</div>
+                <div className="text-[10px] text-zinc-500">Persona packs</div>
+              </div>
+            </button>
+
+            <button onClick={onOpenPasswordGen} className="group flex flex-col gap-1.5 rounded-xl border border-white/5 bg-white/5 p-3 text-left transition hover:border-cyan-400/40 hover:bg-cyan-500/5 hover:scale-[1.02]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/12 text-cyan-200">
+                <KeyRound className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-white">Password forge</div>
+                <div className="text-[10px] text-zinc-500">Entropy first</div>
+              </div>
+            </button>
+          </div>
+
+          <div className="mt-auto grid grid-cols-2 gap-1.5 text-[11px] text-zinc-400">
+            <div className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-200">
+                <Shield className="h-3 w-3" />
+                <span className="text-xs font-semibold text-white">No reuse</span>
+              </div>
+              <p className="mt-0.5 text-[9px] text-zinc-500">Unique creds</p>
+            </div>
+            <div className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5">
+              <div className="flex items-center gap-1.5 text-cyan-200">
+                <Fingerprint className="h-3 w-3" />
+                <span className="text-xs font-semibold text-white">Low print</span>
+              </div>
+              <p className="mt-0.5 text-[9px] text-zinc-500">Neutral names</p>
+            </div>
           </div>
         </motion.div>
 
+        <motion.div
+          variants={item}
+          className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0b101d] p-3 md:col-span-6"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(16,185,129,0.12),transparent_40%)]" />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-emerald-200/70">Smart actions</p>
+              <h3 className="mt-0.5 text-sm font-semibold text-white">One-tap verify & reset</h3>
+            </div>
+            <Bell className="h-7 w-7 text-emerald-200/50" />
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-1.5 text-xs text-zinc-300">
+            <div className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-200"><ScanLine className="h-3 w-3" /><span className="text-xs font-medium">OTP extraction</span></div>
+              <p className="mt-0.5 text-[9px] text-zinc-500">Auto-detect codes</p>
+            </div>
+            <div className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-200"><QrCode className="h-3 w-3" /><span className="text-xs font-medium">Device handoff</span></div>
+              <p className="mt-0.5 text-[9px] text-zinc-500">QR transfer</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          variants={item}
+          className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0d111c] p-3 md:col-span-6"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(59,130,246,0.12),transparent_38%)]" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-blue-200/70">Delivery spine</p>
+              <h3 className="mt-0.5 text-sm font-semibold text-white">Provider mesh + fallbacks</h3>
+            </div>
+            <Server className="h-7 w-7 text-blue-200/50" />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] text-zinc-300">
+            {["Mail.tm", "1secmail", "Mailsac", "Guerrilla"].map((p) => (
+              <span key={p} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 font-semibold text-white/80">
+                {p}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div
+          variants={item}
+          className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0c0f18] p-3 md:col-span-6"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_70%,rgba(244,244,245,0.08),transparent_40%)]" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-200/70">Receipts</p>
+              <h3 className="mt-0.5 text-sm font-semibold text-white">Proof-friendly backups</h3>
+            </div>
+            <Lock className="h-7 w-7 text-zinc-300/50" />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5 text-[9px] text-zinc-400">
+            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5">JSON export</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5">Local-only</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5">One-click burn</span>
+          </div>
+        </motion.div>
+
+          <motion.div
+            variants={item}
+            className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0b1018] p-3 md:col-span-6"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.1),transparent_45%)]" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-emerald-200/70">Stealth layer</p>
+                <h3 className="mt-0.5 text-sm font-semibold text-white">Image + tracker control</h3>
+              </div>
+              <Shield className="h-7 w-7 text-emerald-200/50" />
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] text-zinc-300">
+              <span className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5">Image block</span>
+              <span className="rounded-lg border border-white/5 bg-white/5 px-2 py-1.5">Zen mode</span>
+            </div>
+          </motion.div>
       </motion.div>
     </div>
   )

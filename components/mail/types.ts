@@ -13,6 +13,7 @@ export type Message = {
   attachments?: any[]
   downloadUrl?: string
   otp?: string
+  actionLink?: { url: string; label: string }
 }
 
 export const INITIAL_MESSAGES: Message[] = [

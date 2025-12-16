@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Copy, User, MapPin, CreditCard } from "lucide-react"
+import { RefreshCw, Copy } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 
@@ -45,18 +45,18 @@ export function FakeIdentityDialog({ open, onOpenChange }: { open: boolean, onOp
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label>Full Name</Label>
-            <div className="flex gap-2">
-              <Input value={identity.name} readOnly className="bg-zinc-900 border-zinc-800 font-mono" />
-              <Button size="icon" variant="outline" className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800" onClick={() => navigator.clipboard.writeText(identity.name)}>
+            <div className="flex gap-2 min-w-0">
+              <Input value={identity.name} readOnly className="bg-zinc-900 border-zinc-800 font-mono min-w-0" />
+              <Button size="icon" variant="outline" className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800 shrink-0" onClick={() => navigator.clipboard.writeText(identity.name)}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
           </div>
           <div className="grid gap-2">
             <Label>Address</Label>
-            <div className="flex gap-2">
-              <Input value={`${identity.address}, ${identity.city} ${identity.zip}`} readOnly className="bg-zinc-900 border-zinc-800 font-mono" />
-              <Button size="icon" variant="outline" className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800" onClick={() => navigator.clipboard.writeText(`${identity.address}, ${identity.city} ${identity.zip}`)}>
+            <div className="flex gap-2 min-w-0">
+              <Input value={`${identity.address}, ${identity.city} ${identity.zip}`} readOnly className="bg-zinc-900 border-zinc-800 font-mono min-w-0" />
+              <Button size="icon" variant="outline" className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800 shrink-0" onClick={() => navigator.clipboard.writeText(`${identity.address}, ${identity.city} ${identity.zip}`)}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
