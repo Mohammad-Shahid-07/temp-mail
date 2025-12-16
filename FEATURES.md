@@ -17,7 +17,6 @@
 *   **QR Code:** Instantly transfer email address to mobile device.
 
 ### ⚡ Real-Time Experience
-*   **Live Updates:** SSE/WebSockets for instant email arrival (no refresh button needed).
 *   **Browser Notifications:** Get notified even when the tab is in the background.
 *   **Audio Alerts:** Subtle sound on new mail.
 

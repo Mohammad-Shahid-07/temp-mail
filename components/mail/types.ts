@@ -6,8 +6,13 @@ export type Message = {
   time: string
   preview: string
   body: string
+  html?: string[]
   read: boolean
   tag?: 'inbox' | 'spam' | 'updates'
+  hasAttachments?: boolean
+  attachments?: any[]
+  downloadUrl?: string
+  otp?: string
 }
 
 export const INITIAL_MESSAGES: Message[] = [
