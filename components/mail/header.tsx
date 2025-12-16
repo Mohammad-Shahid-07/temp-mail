@@ -106,9 +106,9 @@ export function MailHeader({
         <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-4 order-1 sm:order-1">
           {/* Logo & Brand */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <Ghost className="h-5 w-5 text-emerald-400" />
-            </div>
+              <div className="h-10 w-10 bg-linear-to-br from-zinc-900 to-black border border-white/10 rounded-xl flex items-center justify-center relative z-10 group-hover:border-emerald-500/50 transition-colors">
+            <Ghost className="h-5 w-5 text-emerald-400" />
+          </div>
             <div>
               <h1 className="text-base font-bold text-white">GhostMail</h1>
               <p className="text-[10px] text-emerald-400/60 font-mono hidden sm:block">Temp • Secure • Anonymous</p>
