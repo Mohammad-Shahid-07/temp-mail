@@ -12,8 +12,8 @@ export type Message = {
   hasAttachments?: boolean
   attachments?: any[]
   downloadUrl?: string
-  otp?: string
-  actionLink?: { url: string; label: string }
+  otp?: string | null
+  actionLink?: { url: string; label: string } | null
 }
 
 export const INITIAL_MESSAGES: Message[] = [
